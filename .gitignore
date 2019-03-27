@@ -1,0 +1,6 @@
+SIO_Packages/*
+/.blackbox/pubring.gpg~
+/.blackbox/pubring.kbx~
+/.blackbox/secring.gpg
+vars.yml
+playbook.retry

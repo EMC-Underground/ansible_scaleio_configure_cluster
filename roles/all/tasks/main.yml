@@ -1,0 +1,95 @@
+- name: "Get ScaleIO token for Auth"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/login
+    return_content: yes
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ vxflex_gateway_pw }}"
+    force_basic_auth: yes
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+  register: msg
+
+- name: "Check to see if protection Domain exists"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/ProtectionDomain/instances/action/queryIdByKey
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "name": "{{ vxflex_protection_domain_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+      - 500
+  register: protection_domain_id
+
+- name: "Create Protection Domain if it does not exist"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/ProtectionDomain/instances
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "name": "{{ vxflex_protection_domain_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+  when: protection_domain_id.status == 500
+
+- name: "Register pd var"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/ProtectionDomain/instances/action/queryIdByKey
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "name": "{{ vxflex_protection_domain_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+  register: protection_domain_id
+
+- name: "Check to see if Storage Pool exists"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/StoragePool/instances/action/queryIdByKey
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "protectionDomainId": "{{ protection_domain_id.json }}", "name": "{{ vxflex_storage_pool_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+      - 500
+  register: storage_pool_id
+
+- name: "Create Storage Pool if it does not exist"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/StoragePool/instances
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "protectionDomainId": "{{ protection_domain_id.json }}", "name": "{{ vxflex_storage_pool_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+  when: storage_pool_id.status == 500
