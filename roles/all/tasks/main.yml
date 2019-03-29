@@ -127,3 +127,18 @@
       - 200
       - 201
       - 202
+
+- name: "Set SDC Policy to auto approve"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/instances/System::{{system_id.json[0].id}}/action/setRestrictedSdcMode
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "restrictedSdcMode": "None"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: false
+    status_code:
+      - 200
+      - 201
+      - 202
