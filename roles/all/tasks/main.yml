@@ -93,3 +93,37 @@
       - 201
       - 202
   when: storage_pool_id.status == 500
+
+- name: "Get system ID"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/types/System/instances
+    method: GET
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: False
+    status_code:
+      - 200
+      - 201
+      - 202
+  register: system_id
+
+- name: "Print system id"
+  debug:
+    var: system_id.json[0].id
+
+- name: "Rename system"
+  uri:
+    url: https://{{ vxflex_gateway_ip }}/api/instances/System::{{system_id.json[0].id}}/action/setSystemName
+    method: POST
+    user: "{{ vxflex_gateway_username }}"
+    password: "{{ msg.json }}"
+    body: { "newName": "{{ vxflex_system_name }}"}
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: false
+    status_code:
+      - 200
+      - 201
+      - 202
